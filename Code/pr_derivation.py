@@ -47,9 +47,9 @@ def fftdl(data, tdat, op = 2):
         return _spec
 
 # set path for fetching experimental data 
-_epath = r'C:\Users\as836\Documents\GitHub\Rapid Simulator DEER\Data\DEERLab_Analysis'
-_sep = 100 # observation and pump pulse separation in MHz
-_mol = 'AQ'
+_epath = r'C:\Users\as836\Documents\GitHub\Rapid-Simulation-of-DEER\Data\DEERLab_Analysis'
+_sep = 70 # observation and pump pulse separation in MHz
+_mol = 'HQ' # select molecule tags from HQ (biradical-I), AF (biradical-II) and AQ (biradical-III)
 _tag = _mol+'_'+str(_sep)+'MHz'
 _expt = np.loadtxt(os.path.join(_epath, _tag+'_dlfit.txt'))
 
@@ -62,16 +62,22 @@ _expt[:,0] -= _expt[0,0]
 _start = time.time()
 
 # define distance domain
-_rrange = np.arange(2.0, 4.5, 0.015)
+_rrange = np.arange(1.0, 3.0, 0.015)
 
 # define P(theta)
 _thtab = np.linspace(0, np.pi/2, 100)
-_pth = np.sin(_thtab)
+
+## for biradical-I with long pulses
+_thmu, _thsm = 1.07, 0.40
+_pth = np.exp(-(_thtab - _thmu)**2/(2*_thsm**2))
+
+## for all the other cases
+#_pth = np.sin(_thtab)
 _pth /= _pth.sum()
 
 # define resonance offset range with a gaussian probability distribution
-_wid = 4  # 4 for tp>=50 ns, 5 for tp=40 ns, 6 for the rest
-_mult = 4
+_wid = 12 # max FWHM for pi-pulse excitation bandwidth (30 ns or longer)
+_mult = 4 # range of reson. offsets = _mult x _wid
 _omtab = np.linspace(-_mult*_wid, _mult*_wid, 100)
 _pom = np.exp(-_omtab**2/(2*_wid**2))
 _pom /= _pom.sum()
@@ -82,19 +88,19 @@ _pom2 = np.exp(-(_omtab2 + _sep)**2/(2*_wid**2))
 _pom2 /= _pom2.sum()
 
 # define pi-pulse magnetic field and duration
-_wp2, _wp = 10.00, 10.00 # pulse field in rad.MHz
-_tp2, _tp = 25.*1E-3, 50.*1E-3 # pulse length in us
+_wp2, _wp = 15.625, 15.625 # pulse field in MHz
+_tp2, _tp = 16.*1E-3, 32.*1E-3 # pi/2 and pi pulse length in us
 
 # define time-domain parameters
 _tau1 = 0.4
-_tau2 = 4.0
+_tau2 = 1.8
 _ttab = _expt[:,0].copy()
 
 _tdat, _rdat = np.meshgrid(_ttab, _rrange, indexing = "ij")
 _tdat, _rdat = np.ndarray.flatten(_tdat), np.ndarray.flatten(_rdat)
 
 # set maximum number of iterations
-_mmax = 5*1E2
+_mmax = 3*1E3 
 
 # calculate the design matrix
 _res = np.zeros((_ttab.shape[0], _rrange.shape[0]))
@@ -140,9 +146,11 @@ _daty2 = scmm(_daty2)
 _ptkn2 = ptkn_deriv(_datf1, _daty2, 1)[0] # regularization parameter lambda is set to 1
 
 # plot the averaged P(r)
-plt.plot(_rrange, scmm(movav(_ptkn1*_ptkn2, 3)), 'b')
+plt.plot(_rrange, movav(_ptkn1*_ptkn2, 3), 'b')
 plt.show()
 
+
 # save the data
-_wpath = r'C:\Users\as836\Documents\GitHub\Rapid Simulator DEER\Data\NewKernel_Pr'
-np.savetxt(os.path.join(_wpath, _tag+'_Pr.txt'), np.c_[_rrange, scmm(movav(_ptkn1*_ptkn2, 3))])
+_wpath = r'C:\Users\as836\Documents\GitHub\Rapid-Simulation-of-DEER\Data\NewKernel_Pr'
+np.savetxt(os.path.join(_wpath, _tag+'_Pr-PTH.txt'), np.c_[_rrange, movav(_ptkn1*_ptkn2, 3)])
+np.savetxt(os.path.join(_wpath, _tag+'_nkfit-PTH.txt'), np.c_[_expt[:,0], scmm(_dat1@movav(_ptkn1*_ptkn2, 3))])

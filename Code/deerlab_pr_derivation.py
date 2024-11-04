@@ -10,7 +10,7 @@ import numpy as np
 import os
 
 # mother directory
-_mpath = r'C:\Users\as836\Documents\GitHub\Rapid Simulator DEER'
+_mpath = r'C:\Users\as836\Documents\GitHub\Rapid-Simulation-of-DEER'
 
 # write data
 _wpath = os.path.join(_mpath,'Data\DEERLab_Analysis')
@@ -30,8 +30,8 @@ _seps = [[20, 25, 30, 50, 70, 100],
 
 # set the distance domain
 _rmins = [1.0, 1.5, 2.0]
-_rmaxs = [3.0, 3.5, 4.5]
-_delrs = [0.015, 0.01, 0.015]
+_rmaxs = [3.0, 3.0, 4.0]
+_delrs = [0.01, 0.015, 0.015]
 
 # set pulse separation time parameters
 _tmin = 0.28
@@ -83,4 +83,4 @@ for i in range(3):
         np.savetxt(os.path.join(_wpath, _mtag+'_'+str(_seps[i][j])+'MHz_Pr.txt'), 
                    np.c_[_r, _Pr])
         np.savetxt(os.path.join(_wpath, _mtag+'_'+str(_seps[i][j])+'MHz_dlfit.txt'), 
-                   np.c_[_t, _Vexp, _Bfit])
+                   np.c_[_t, _Vexp, _Bfit, _results.model])
