@@ -30,12 +30,12 @@ def movav(data, n=3):
 formatter = FuncFormatter(my_formatter)
 
 _thpath = r'C:\Users\as836\Documents\GitHub\Rapid-Simulation-of-DEER\Data\Ptheta_Calculation'
-_impath = r'C:\Users\as836\Documents\GitHub\Rapid-Simulation-of-DEER\Data\Images' 
+_impath = r'C:\Users\as836\Documents\Work_with_JHF\DEER_Kernel_Sep24\Images_GitHub' 
 
 
 _seps = ['20', '25', '30', '50', '70', '100']
-_thmus = [1.05, 1.05, 1.06, 1.07, 1.07, 1.00] 
-_thsms = [0.22, 0.25, 0.35, 0.38, 0.40, 0.28]
+_thmus = [1.07, 1.07, 1.08, 1.07, 1.07, 1.00] 
+_thsms = [0.24, 0.28, 0.36, 0.38, 0.40, 0.28]
  
 _thtab = np.linspace(0, np.pi/2, 100)
 
@@ -95,7 +95,7 @@ plt.savefig(os.path.join(_impath,'ptheta_fits.png'),
             bbox_inches = 'tight', transparent = True)
 plt.show()
 
-
+r'''
 # nitroxide field-swept spectrum
 sns.set_theme(context='talk', style='white', 
                   palette='bright', font_scale = 1.8,
@@ -135,3 +135,4 @@ axs.set_xlabel('Magnetic Field (MHz)', weight = 'bold')
 plt.savefig(os.path.join(_impath,'nitroxide_FS.png'),
             bbox_inches = 'tight', transparent = True)
 plt.show()
+'''

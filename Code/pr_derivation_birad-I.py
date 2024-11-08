@@ -48,8 +48,8 @@ def fftdl(data, tdat, op = 2):
 
 # set path for fetching experimental data 
 _epath = r'C:\Users\as836\Documents\GitHub\Rapid-Simulation-of-DEER\Data\DEERLab_Analysis'
-_sep = 20 # observation and pump pulse separation in MHz
-_mol = 'AF' # select molecule tags from HQ (biradical-I), AF (biradical-II) and AQ (biradical-III)
+_sep = 30 # observation and pump pulse separation in MHz
+_mol = 'HQ' # select molecule tags from HQ (biradical-I), AF (biradical-II) and AQ (biradical-III)
 _tag = _mol+'_'+str(_sep)+'MHz'
 _expt = np.loadtxt(os.path.join(_epath, _tag+'_dlfit.txt'))
 
@@ -62,11 +62,17 @@ _expt[:,0] -= _expt[0,0]
 _start = time.time()
 
 # define distance domain
-_rrange = np.arange(1.5, 3.0, 0.012)
+_rrange = np.arange(0.5, 2.5, 0.015)
 
 # define P(theta)
 _thtab = np.linspace(0, np.pi/2, 100)
-_pth = np.sin(_thtab)
+
+## for biradical-I with long pulses
+_thmu, _thsm = 1.08, 0.30
+_pth = np.exp(-(_thtab - _thmu)**2/(2*_thsm**2))
+
+## for all the other cases
+#_pth = np.sin(_thtab)
 _pth /= _pth.sum()
 
 # define resonance offset range with a gaussian probability distribution
@@ -82,19 +88,19 @@ _pom2 = np.exp(-(_omtab2 + _sep)**2/(2*_wid**2))
 _pom2 /= _pom2.sum()
 
 # define pi-pulse magnetic field and duration
-_wp2, _wp = 10., 10. # pulse field in MHz
-_tp2, _tp = 25.*1E-3, 50.*1E-3 # pi/2 and pi pulse length in us
+_wp2, _wp = 14.71, 14.71 # pulse field in MHz
+_tp2, _tp = 17.*1E-3, 34.*1E-3 # pi/2 and pi pulse length in us
 
 # define time-domain parameters
 _tau1 = 0.4
-_tau2 = 2.0
+_tau2 = 1.8
 _ttab = _expt[:,0].copy()
 
 _tdat, _rdat = np.meshgrid(_ttab, _rrange, indexing = "ij")
 _tdat, _rdat = np.ndarray.flatten(_tdat), np.ndarray.flatten(_rdat)
 
 # set maximum number of iterations
-_mmax = 2*1E3 
+_mmax = 3*1E3 
 
 # calculate the design matrix
 _res = np.zeros((_ttab.shape[0], _rrange.shape[0]))
@@ -128,11 +134,10 @@ _datx1 = _res.copy()
 _dim = _datx1.shape[1]
 _dat1 = np.array([scmm(_datx1[:,x]) for x in range(_dim)]).T
 
-_grid = 200
-_rho, _eta, _prs = TIKR(_dat1, _daty1, _grid)
-_alphas = np.logspace(-4,2,_grid)
+_rho, _eta, _prs = TIKR(_dat1, _daty1, 200)
+_alphas = np.logspace(-4,2,200)
 # change this number to find the L-curve corner
-_num = 130
+_num = 105
 plt.loglog(_rho, _eta)
 plt.loglog(_rho[_num], _eta[_num], marker = "o")
 plt.show()
@@ -145,9 +150,9 @@ _fdat, _daty2 = fftdl(_daty1, _expt[:,0], op = 1)
 _daty2 = scmm(_daty2)
 
 _datf1 = np.array([scmm(fftdl(_dat1[:,x], _expt[:,0])) for x in range(_dim)]).T
-_rho, _eta, _prs = TIKR(_datf1, _daty2, _grid)
+_rho, _eta, _prs = TIKR(_datf1, _daty2, 200)
 # change this number to find the L-curve corner
-_num = 138
+_num = 125
 plt.loglog(_rho, _eta)
 plt.loglog(_rho[_num], _eta[_num], marker = "o")
 plt.show()
@@ -161,5 +166,5 @@ plt.show()
 
 # save data
 _dpath = r'C:\Users\as836\Documents\GitHub\Rapid-Simulation-of-DEER\Data\NewKernel_Pr'
-np.savetxt(os.path.join(_dpath, _tag + '_Pr.txt'), np.c_[_rrange, scmm(movav(_pr)*movav(_pw))])
-np.savetxt(os.path.join(_dpath, _tag + '_nkfit.txt'), np.c_[_ttab, scmm(_dat1@(movav(_pr)*movav(_pw)))])
+np.savetxt(os.path.join(_dpath, _tag + '_Pr-PTH.txt'), np.c_[_rrange, scmm(movav(_pr)*movav(_pw))])
+np.savetxt(os.path.join(_dpath, _tag + '_nkfit-PTH.txt'), np.c_[_ttab, scmm(_dat1@(movav(_pr)*movav(_pw)))])
