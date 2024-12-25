@@ -17,3 +17,4 @@
 - Calculated P(theta)'s for biradical-I (*Ptheta_Calculation*)
 - Background fitted DEER data and P(r)'s by DEERLab (*DEERLab_Analysis*) 
 
+#### Cite **https://doi.org/10.1021/acs.jpclett.4c03245** to refer to this work
